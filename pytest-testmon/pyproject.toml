@@ -1,0 +1,64 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pytest-testmon"
+authors = [
+    { name = "Tibor Arpas", email = "tibor@testmon.org" },
+]
+dynamic =  ["version"]
+
+description = "selects tests affected by changed files and methods"
+readme = "README.md"
+requires-python = ">=3.10"
+keywords = ["testing", "pytest", "plugin"]
+license = { text = "MIT" }
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Operating System :: POSIX",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: MacOS :: MacOS X",
+    "Topic :: Software Development :: Testing",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Utilities",
+    "Programming Language :: Python",
+    "Framework :: Pytest",
+]
+dependencies = [
+    "pytest>=5,<10",
+    "coverage>=6,<8",
+]
+
+# specify testmon and tmserver as packages of this project
+[tool.setuptools]
+packages = [
+    "testmon",
+]
+
+[tool.setuptools.dynamic]
+version = {attr = "testmon.TESTMON_VERSION"}
+
+[tool.black]
+exclude = '''
+(
+  /(
+      \.eggs         # exclude a few common directories in the
+    | \.git          # root of the project
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+  )/
+  | io.intellij/
+)
+'''
+
+
+[project.entry-points.pytest11]
+pytest-testmon = "testmon.pytest_testmon"
