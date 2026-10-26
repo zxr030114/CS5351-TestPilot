@@ -1,0 +1,13 @@
+# pr-analyzer dependencies
+# install: pip install -r requirements.txt
+#
+# tree-sitter MUST stay < 0.22: tree-sitter-languages 1.10.2 ships grammars
+# built for the old ABI, and 0.22+ raises "Language version mismatch".
+# If tree-sitter-languages has no wheel for your platform, analyzer.py falls
+# back to tree-sitter-language-pack (same API).
+requests>=2.31.0                 # GitHub REST API + raw source download
+PyGithub>=2.1.1                  # PR metadata (base_sha / head_sha / files)
+tree-sitter==0.21.3              # parser core (ABI-pinned to the grammars below)
+tree-sitter-languages==1.10.2    # prebuilt grammars: python, java, ...
+unidiff>=0.7.5                   # unified diff parsing (falls back to built-in parser)
+python-dotenv>=1.0.1             # load GITHUB_TOKEN from .env

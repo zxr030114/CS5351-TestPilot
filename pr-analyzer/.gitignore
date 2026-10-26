@@ -1,0 +1,16 @@
+# Secrets: never commit them (the repository-level .gitignore does not cover .env, so keep it here)
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# Generated artefacts
+out/
+output.json
+*.log
