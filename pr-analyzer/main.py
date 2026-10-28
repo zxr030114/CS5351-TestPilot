@@ -40,6 +40,7 @@ Exit codes: 0 success; 1 unexpected error; 2 expected analysis failure (not a gi
 from __future__ import annotations
 
 import argparse
+import difflib
 import json
 import logging
 import sys
@@ -73,6 +74,7 @@ from analyzer import (  # noqa: E402  (must be imported after load_dotenv)
     summarize_changes,
     summarize_entities,
 )
+from behavioral_change_detector import BehavioralChangeDetector  # noqa: E402
 
 LOGGER = logging.getLogger("pr-analyzer")
 
@@ -440,6 +442,54 @@ def run_compare_demo() -> int:
     return 0
 
 
+def run_behavior_demo() -> int:
+    """Show text-diff output beside AST-guided evidence for four changes and a control."""
+    cases = [
+        (
+            "Branch Change",
+            "def validate_user(user):\n    return user.is_active\n",
+            "def validate_user(user):\n    if user.is_blocked:\n        raise PermissionError()\n    return user.is_active\n",
+        ),
+        (
+            "Boundary Change",
+            "def check_age(age):\n    if age >= 18:\n        return True\n    return False\n",
+            "def check_age(age):\n    if age >= 21:\n        return True\n    return False\n",
+        ),
+        (
+            "Exception Behavior Change",
+            "def parse_token(token):\n    return None\n",
+            "def parse_token(token):\n    raise InvalidTokenError()\n",
+        ),
+        (
+            "Return Behavior Change",
+            "def calculate(amount):\n    return amount\n",
+            "def calculate(amount):\n    return round(amount, 2)\n",
+        ),
+        (
+            "No Behavior Change (formatting/comments)",
+            "def total(items):\n    return sum(items)\n",
+            "def total(items):\n    # Keep the same calculation\n\n    return sum(items)\n",
+        ),
+    ]
+    detector = BehavioralChangeDetector(use_llm=False)
+    for name, old_code, new_code in cases:
+        print(f"=== {name} ===")
+        print("Old Code:\n" + old_code, end="")
+        print("New Code:\n" + new_code, end="")
+        print("Text baseline (unified diff):")
+        print("".join(difflib.unified_diff(
+            old_code.splitlines(keepends=True),
+            new_code.splitlines(keepends=True),
+            fromfile="old.py",
+            tofile="new.py",
+        )), end="")
+        print("AST Detection / Behavioral Summary / Suggested Tests:")
+        print(json.dumps(detector.detect(old_code, new_code), ensure_ascii=False, indent=2))
+        print()
+    print("Baseline reports changed text lines; it does not assign behavior categories or functions.")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="pr-analyzer",
@@ -504,6 +554,23 @@ def build_parser() -> argparse.ArgumentParser:
         "--demo-compare",
         action="store_true",
         help="compare the built-in old/new source and demo add/delete/modify with change_category.",
+    )
+
+    behavior = parser.add_argument_group("behavioral change detection (Python)")
+    behavior.add_argument(
+        "--behavior-old",
+        metavar="PATH",
+        help="old Python source file for the optional behavioral-change analysis.",
+    )
+    behavior.add_argument(
+        "--behavior-new",
+        metavar="PATH",
+        help="new Python source file for the optional behavioral-change analysis.",
+    )
+    behavior.add_argument(
+        "--demo-behavior",
+        action="store_true",
+        help="show branch, boundary, exception, return, and formatting-control demos offline.",
     )
 
     mirror = parser.add_argument_group("PR source mirror (needs --pr and network)")
@@ -573,6 +640,31 @@ def _repo_name_from_args(args: argparse.Namespace) -> str:
 
 
 def _validate(args: argparse.Namespace, parser: argparse.ArgumentParser) -> None:
+    if bool(args.behavior_old) != bool(args.behavior_new):
+        parser.error("--behavior-old and --behavior-new must be provided together")
+    behavior_files = bool(args.behavior_old and args.behavior_new)
+    other_modes = (
+        args.pr is not None
+        or args.demo
+        or bool(args.diff_file)
+        or args.demo_ast
+        or args.demo_compare
+        or args.demo_behavior
+        or args.analyze
+        or args.save_sources is not None
+    )
+    if behavior_files and other_modes:
+        parser.error("--behavior-old/--behavior-new cannot be combined with other analysis modes")
+    if args.demo_behavior and (
+        args.pr is not None
+        or args.demo
+        or args.diff_file
+        or args.demo_ast
+        or args.demo_compare
+        or args.analyze
+        or args.save_sources is not None
+    ):
+        parser.error("--demo-behavior cannot be combined with other analysis modes")
     if args.pr is not None:
         if not _repo_name_from_args(args):
             parser.error("online mode requires --repo owner/repo (or both --owner and --name)")
@@ -671,10 +763,32 @@ def main(argv: list | None = None) -> int:
     )
 
     try:
+        if args.demo_behavior:
+            return run_behavior_demo()
         if args.demo_ast:
             return run_entity_demo(args.demo_lang or "python")
         if args.demo_compare:
             return run_compare_demo()
+
+        if args.behavior_old and args.behavior_new:
+            old_path, new_path = Path(args.behavior_old), Path(args.behavior_new)
+            if not old_path.is_file():
+                raise AnalysisError(f"--behavior-old does not exist: {old_path}")
+            if not new_path.is_file():
+                raise AnalysisError(f"--behavior-new does not exist: {new_path}")
+            report = BehavioralChangeDetector().detect(
+                old_path.read_text(encoding="utf-8"),
+                new_path.read_text(encoding="utf-8"),
+            )
+            payload = json.dumps(report, ensure_ascii=False, indent=args.indent)
+            if args.output:
+                output_path = Path(args.output)
+                output_path.parent.mkdir(parents=True, exist_ok=True)
+                output_path.write_text(payload, encoding="utf-8")
+                LOGGER.info("behavior report written to %s", output_path.resolve())
+            else:
+                print(payload)
+            return 2 if report["errors"] else 0
 
         if args.demo or args.diff_file:
             if args.diff_file:

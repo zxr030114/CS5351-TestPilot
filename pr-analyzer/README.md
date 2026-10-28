@@ -4,8 +4,8 @@ Change-analysis module for CS5351-TestPilot (Member 1). It takes a PR (or a loca
 returns structured JSON that the downstream **test dependency mapping** module (built on
 `pytest-testmon`) consumes directly to answer "which tests must run for this change".
 
-> Design principle: **pure AST static analysis, no LLM**. Results are reproducible, cost nothing,
-> and are precise down to "which class/function/method changed, and on which lines in base vs head".
+> The PR entity analyzer is deterministic tree-sitter AST analysis. The optional Member 2
+> behavioral explanation adapter is separate, disabled by default, and never required for PR analysis.
 
 ## Layout
 
@@ -13,13 +13,16 @@ returns structured JSON that the downstream **test dependency mapping** module (
 | --- | --- |
 | `main.py` | CLI: argument parsing, exit codes, file output, offline demos, `--analyze` PR pipeline |
 | `analyzer.py` | Core logic: diff parsing, noise filtering, GitHub fetching, **tree-sitter AST entity extraction, old/new comparison and the `analyze_pr` pipeline** (**the module docstring at the top documents the full interface contract — read it first**) |
+| `behavioral_change_detector.py` | Optional Python-only behavioral analysis with `ast`: branches, comparison boundaries, exceptions, returns, test suggestions, and optional LLM explanations |
 | `requirements.txt` | Dependencies |
-| `.env.example` | Environment variables example (copy to `.env`; currently only `GITHUB_TOKEN` is needed) |
+| `requirements-dev.txt` | Test dependencies (`pytest`) |
+| `.env.example` | Environment variable example (`GITHUB_TOKEN` and optional behavior LLM settings) |
 | `tests/test_ast_entities.py` | Offline tests for entity extraction and fingerprint behaviour (no network) |
 | `tests/test_compare_entities.py` | Offline tests for old/new comparison and `change_category` |
 | `tests/test_diff_lines.py` | Offline tests for per-line numbers inside a hunk |
 | `tests/test_pr_sources.py` | Offline tests for the PR source mirror (fake session, no network) |
 | `tests/test_analyze_pr.py` | Offline tests for the end-to-end pipeline and rename detection (fake session) |
+| `tests/test_behavioral_change_detector.py` | Tests for behavior changes, output schema, test suggestions, syntax errors, and LLM fallback |
 
 ## Install
 
@@ -43,6 +46,9 @@ python main.py --demo-ast --demo-lang java
 # Offline: built-in base/head versions, demos add / delete / modify with change_category
 python main.py --demo-compare
 
+# Offline: compare text diff and AST-guided behavior evidence across five examples
+python main.py --demo-behavior
+
 # Offline: built-in sample diff, demos "filter noise -> split -> line ranges"
 python main.py --demo
 python main.py --demo --context-lines 1
@@ -65,6 +71,45 @@ python main.py --repo pallets/flask --pr 6168 -o out/flask_6168.json
 
 # Summary only
 python main.py --repo . --base main --head HEAD --summary-only
+
+# Offline: analyze two Python versions and emit the behavior report
+python main.py --behavior-old out/base.py --behavior-new out/head.py -o out/behavior.json
+```
+
+### Behavioral Change Detection (Member 2)
+
+`BehavioralChangeDetector` is a separate Python source-pair API. It uses the standard-library
+`ast` module and does not execute analyzed code. This keeps the existing `analyze_pr()` schema
+and the tree-sitter entity pipeline unchanged. Use the existing PR JSON for dependency mapping,
+and use the source-pair API when the four behavior categories and focused test suggestions are
+needed.
+
+```python
+from behavioral_change_detector import BehavioralChangeDetector
+
+report = BehavioralChangeDetector().detect(old_code, new_code)
+```
+
+The JSON report always includes `change_type`, `summary`, `affected_functions`,
+`behavioral_impact`, `behavior_changes`, `suggested_tests`, `errors`, and `analysis`. Supported
+records are `NEW_BRANCH`, `DELETED_BRANCH`, `MODIFIED_BRANCH`, `BOUNDARY_CHANGE`,
+`EXCEPTION_BEHAVIOR_CHANGE`, and `RETURN_BEHAVIOR_CHANGE`. The analyzer uses
+`change_type: "unknown"` unless an optional model supplies a recognized interpretation.
+AST findings are potential changes, not proof of runtime behavior.
+
+LLM explanations are disabled by default. To enable the OpenAI-compatible adapter, set
+`BEHAVIOR_LLM_API_KEY`; optionally set `BEHAVIOR_LLM_MODEL` and `BEHAVIOR_LLM_BASE_URL`.
+The model may add summary and impact wording, but cannot add AST evidence or affected functions.
+Request/configuration failures retain the rule-based summary. No key is needed for AST-only use.
+
+Windows PowerShell:
+
+```powershell
+cd pr-analyzer
+py -3 -m pip install -r requirements-dev.txt
+py -3 main.py --demo-behavior
+py -3 main.py --behavior-old .\out\base.py --behavior-new .\out\head.py -o .\out\behavior.json
+py -3 -m pytest .\tests
 ```
 
 Exit codes: `0` success, `1` unexpected error, `2` expected failure (not a git repo, API error,

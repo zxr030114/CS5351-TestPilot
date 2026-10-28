@@ -18,7 +18,10 @@ cd "C:\Users\kunkunji\anaconda3\envs\se\CS5351-TestPilot-main\pr-analyzer"
 # 1) 不联网自检：内置新旧源码，打印 add / delete / modify + change_category
 & $py main.py --demo-compare
 
-# 2) 跑单元测试（63 个，全部离线，不需要网络）
+# 1b) 行为变化检测 demo：四类变化 + 无行为变化对照
+& $py main.py --demo-behavior
+
+# 2) 跑单元测试（离线，不需要网络）
 & $py -m unittest discover -s tests
 
 # 3) 真实 PR 全流程：镜像源码 -> 提取实体 -> 新旧对比 -> 识别 rename -> 写 output.json
@@ -42,8 +45,10 @@ CS5351-TestPilot-main/
 ├── pytest-testmon/               # 老师提供的 testmon 源码，我们只读、用来对齐机制
 └── pr-analyzer/                  # ★ Member 1 的模块
     ├── analyzer.py               # 核心库：diff 解析 / 噪音过滤 / GitHub 拉取 / AST / 对比 / 流水线
+    ├── behavioral_change_detector.py # Member 2：Python 行为变化检测与测试建议
     ├── main.py                   # CLI 入口：参数解析、离线 demo、写 output.json、退出码
     ├── requirements.txt          # 依赖清单
+    ├── requirements-dev.txt      # pytest 开发测试依赖
     ├── .env.example              # 环境变量示例（复制成 .env 后填 token）
     ├── .gitignore                # 模块级忽略：.env、__pycache__、out/、output.json
     ├── README.md                 # 模块英文文档（字段含义、API 表、限制）—— 和本文互补
@@ -52,7 +57,8 @@ CS5351-TestPilot-main/
     │   ├── test_compare_entities.py    # add/delete/modify 与四类 change_category
     │   ├── test_diff_lines.py          # hunk 内逐行新旧行号
     │   ├── test_pr_sources.py          # 源码镜像（布局、manifest、路径安全、断点续传）
-    │   └── test_analyze_pr.py          # 端到端流水线 + find_renames
+    │   ├── test_analyze_pr.py          # 端到端流水线 + find_renames
+    │   └── test_behavioral_change_detector.py # Member 2 行为变化检测
     ├── out/                      # 【生成物】源码镜像目录，默认 out/pr_<N>/{base,head,manifest.json}
     ├── output.json               # 【生成物】默认输出文件（样例为 pallets/flask#6168 的结果）
     └── docs/                     # （本文件所在位置，位于仓库根 docs/ 下）
@@ -68,7 +74,7 @@ CS5351-TestPilot-main/
 | `main.py` | 命令行入口。负责参数、互斥校验、四种运行模式（本地 diff 报告 / 单文件 AST 演示 / 新旧对比演示 / 真实 PR） | 只想跑结果时只用它 |
 | `requirements.txt` | 运行依赖 | 换机器时 `pip install -r requirements.txt` |
 | `.env.example` | 只列 `GITHUB_TOKEN`（私有仓库必需，公开仓库可选） | 首次配置 token |
-| `tests/` | 63 个断言级测试，不需要网络、不需要 token | 改完代码先跑它 |
+| `tests/` | 离线断言测试，不需要网络、不需要 token | 改完代码先跑它 |
 | `out/pr_<N>/` | 每个 PR 的 base/head 完整源码 + `manifest.json`（每文件 sha256/字节/行数/是否二进制/错误） | 想离线复现分析、或做跨文件比对时 |
 
 ### 1.3 依赖与环境
@@ -85,6 +91,7 @@ CS5351-TestPilot-main/
 | `main.py --demo` | 否 | 终端 | 演示“二进制/锁文件/文档过滤 + hunk 分块 + 行号范围” |
 | `main.py --demo-ast [--demo-lang java]` | 否 | 终端 | 演示单个文件抽出的 class/function/method 及其三种指纹 |
 | `main.py --demo-compare` | 否 | 终端 | 演示 base/head 对比与 `change_category` 判定（最直观） |
+| `main.py --demo-behavior` | 否 | 终端 | 演示 branch / boundary / exception / return 及格式修改对照 |
 | `main.py --repo owner/name --pr N` | 是 | `output.json` | **真实 PR 全流程**，下游要的就是这份 JSON |
 | `main.py --repo . --base HEAD~1 --head HEAD` | 否 | 终端/`-o` | 本地仓库两个 commit 的 diff 报告（Schema 1.0，与 AST 流水线是两套输出） |
 
@@ -287,6 +294,53 @@ Counter({'Logic change': 6, 'Signature change': 1})
 - [ ] `add` 输出“需要新增测试”，而不是“需要重跑现有测试”。
 - [ ] 对 `skipped` 里的 `unsupported language` 不报错（噪音文件本来就不该进分析）。
 - [ ] 遇到 `schema_version != "2.0"` 直接报错退出，避免把 diff 报告的 1.0 结构当 AST 输出读。
+
+### 2.8 行为变化检测 API（Member 2）
+
+本任务还提供一个基于 Python 标准库 `ast` 的 old/new 源码 API。它与 PR 的 `output.json`
+依赖映射路径分开：原有流程继续消费 schema 2.0 的 AST 实体结果；需要 Branch、Boundary、
+Exception、Return 语义证据时，调用行为检测器。它不重跑 diff、不执行被分析代码，也不改变
+`analyze_pr()` 的输出契约。
+
+```python
+from behavioral_change_detector import BehavioralChangeDetector
+
+report = BehavioralChangeDetector().detect(old_code, new_code)
+```
+
+PowerShell：
+
+```powershell
+cd pr-analyzer
+py -3 -m pip install -r requirements-dev.txt
+py -3 main.py --demo-behavior
+py -3 main.py --behavior-old .\out\base.py --behavior-new .\out\head.py -o .\out\behavior.json
+py -3 -m pytest .\tests
+```
+
+无 `BEHAVIOR_LLM_API_KEY` 时只使用 AST 和规则摘要。可选配置 `BEHAVIOR_LLM_MODEL` 与
+`BEHAVIOR_LLM_BASE_URL`；模型只能补充自然语言摘要/影响，不能新增 AST 证据或受影响函数。
+无法可靠分类时 `change_type` 为 `unknown`。结果是潜在静态分析判断，不能证明运行时等价。
+
+### 2.9 给 Member 3 及后续整合成员的交接说明
+
+**Member 2 已交付的部分：** `BehavioralChangeDetector` 接收一对 Python 源码字符串，返回 JSON 可序列化报告；支持分支、比较边界、异常和返回表达式变化，并生成测试建议。专项测试 17 项通过；在 Python 3.10 且安装 `requirements-dev.txt` 的环境中，全项目测试 80 项通过。LLM 默认关闭；没有执行真实 LLM 请求，也没有把该模块接入 `analyze_pr()` 的完整 PR 自动化流程。
+
+**给 Member 3：** 请继续负责把 PR 变更映射到实际受影响的测试。PR 结构变化仍从 `analyze_pr()` 的 Schema 2.0 `changes` 读取；需要 Python 语义细节时，利用源码镜像取得 base/head 文件内容，再调用 `BehavioralChangeDetector().detect(old_code, new_code)`。将 `file_path` 与行为报告中的函数/作用域、旧新行号关联到 testmon 依赖数据。`suggested_tests` 是测试场景建议，不代表仓库里已有该测试，也不代表它已执行；实际要运行哪些测试仍由你的依赖映射结果决定。请单独处理 rename 的旧/新实体键迁移，并保留无法映射或没有覆盖数据的状态，不要把它误报成“测试已覆盖”。
+
+**给后续整合负责人（例如 Member 4，如团队如此分工）：** 汇总 Member 1 的 PR 结构变化、Member 2 的潜在行为证据和 Member 3 的实际测试选择/覆盖信息，形成最终报告。接入时不要静默改变 `analyze_pr()` 现有 Schema；如需合并行为报告，先与团队确定一个向后兼容的新增字段或新版本 Schema。清楚区分静态推断、测试建议、实际找到的测试和实际运行结果；非 Python/未支持源码、语法错误及缺失覆盖数据要能在报告中说明。是否增加 GitHub Actions 或调用真实 LLM，应由团队另行确认。
+
+**验证命令（PowerShell）：**
+
+```powershell
+conda activate testpilot
+cd "C:\Users\54028\Documents\Codex\CS5351-TestPilot\pr-analyzer"
+python -m pytest .\tests\test_behavioral_change_detector.py -q -p no:cacheprovider
+python -m pytest .\tests -q -p no:cacheprovider
+python .\main.py --demo-behavior
+```
+
+最近一次已报告的结果为行为检测专项测试 `17 passed`、全项目 `80 passed`；Tree-sitter 有两条弃用警告，不是失败。若代码继续变更，请重新运行并报告新的实际结果。
 
 ---
 
