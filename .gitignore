@@ -25,3 +25,4 @@ build/
 # Local test dependency data
 .testmondata*
 .pytest_cache/
+*.egg-info/
