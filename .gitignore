@@ -21,3 +21,9 @@ node_modules/
 dist/
 build/
 *.log
+
+# Local test dependency data
+.testmondata*
+.pytest_cache/
+*.egg-info/
+mapping-demo/mapping_result.json
