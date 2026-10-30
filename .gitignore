@@ -21,3 +21,7 @@ node_modules/
 dist/
 build/
 *.log
+
+# Local test dependency data
+.testmondata*
+.pytest_cache/
