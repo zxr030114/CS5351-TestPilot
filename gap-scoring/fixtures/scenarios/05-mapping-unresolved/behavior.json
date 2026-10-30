@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "change_type": "unknown",
+  "summary": "scenario fixture",
+  "affected_functions": [
+    "render"
+  ],
+  "behavioral_impact": "Potential impact only; static AST analysis does not prove runtime behavior.",
+  "behavior_changes": [
+    {
+      "type": "RETURN_BEHAVIOR_CHANGE",
+      "function": "render",
+      "scope": "render",
+      "old_line": null,
+      "new_line": 9,
+      "confidence": "potential",
+      "old_expression": "render_rows(rows)",
+      "new_expression": "render_rows(sorted(rows))"
+    }
+  ],
+  "suggested_tests": [],
+  "errors": [],
+  "analysis": {
+    "method": "python-ast",
+    "runtime_behavior_proven": false,
+    "llm_status": "disabled"
+  }
+}

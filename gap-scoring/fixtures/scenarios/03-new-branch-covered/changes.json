@@ -1,0 +1,67 @@
+{
+  "schema_version": "2.0",
+  "mode": "pr_ast",
+  "repo": {
+    "owner": "demo",
+    "name": "shop",
+    "base_sha": "0000000000000000000000000000000000000000",
+    "head_sha": "1111111111111111111111111111111111111111",
+    "pr_number": 1
+  },
+  "mirror": {
+    "out_dir": "",
+    "counts": {
+      "files": 1,
+      "downloaded": 2,
+      "kept": 0,
+      "failed": 0
+    }
+  },
+  "summary": {
+    "files_changed": 1,
+    "files_analyzed": 1,
+    "files_skipped": 0,
+    "changes": 1,
+    "renames": 0,
+    "by_change_type": {
+      "modify": 1
+    },
+    "by_change_category": {
+      "Logic change": 1
+    },
+    "warnings": 0
+  },
+  "files": [
+    {
+      "file_path": "shop/cart.py",
+      "language": "python",
+      "is_test_file": false,
+      "changes": [
+        {
+          "entity_type": "function",
+          "entity_name": "total",
+          "change_type": "modify",
+          "change_category": "Logic change",
+          "line_start": 1,
+          "line_end": 10,
+          "summary": "AST structural change in function body",
+          "file_path": "shop/cart.py"
+        }
+      ]
+    }
+  ],
+  "changes": [
+    {
+      "entity_type": "function",
+      "entity_name": "total",
+      "change_type": "modify",
+      "change_category": "Logic change",
+      "line_start": 1,
+      "line_end": 10,
+      "summary": "AST structural change in function body",
+      "file_path": "shop/cart.py"
+    }
+  ],
+  "skipped": [],
+  "warnings": []
+}

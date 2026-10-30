@@ -1,0 +1,65 @@
+{
+  "scenarios": [
+    {
+      "name": "00-precision-blind",
+      "note": "return precision changed; the only assertion uses integers",
+      "path": ".",
+      "expected": {
+        "band": "LOW",
+        "score": 43.55,
+        "confidence": "HIGH",
+        "scored": true
+      }
+    },
+    {
+      "name": "01-exception-uncovered",
+      "note": "a new exception type appears and no test reaches the changed branch",
+      "expected": {
+        "band": "HIGH",
+        "score": 96.25,
+        "confidence": "HIGH",
+        "scored": true
+      }
+    },
+    {
+      "name": "02-boundary-no-assertion",
+      "note": "a comparison boundary moves and a test runs through it without asserting",
+      "expected": {
+        "band": "MEDIUM",
+        "score": 79.92,
+        "confidence": "HIGH",
+        "scored": true
+      }
+    },
+    {
+      "name": "03-new-branch-covered",
+      "note": "a new branch is added and an existing test asserts its effect",
+      "expected": {
+        "band": "NONE",
+        "score": 0.0,
+        "confidence": "HIGH",
+        "scored": true
+      }
+    },
+    {
+      "name": "04-documentation-only",
+      "note": "only a docstring changed; the report must not turn this into a gap",
+      "expected": {
+        "band": "NONE",
+        "score": 0.0,
+        "confidence": "HIGH",
+        "scored": false
+      }
+    },
+    {
+      "name": "05-mapping-unresolved",
+      "note": "dependency mapping cannot place the change, so coverage is unknown",
+      "expected": {
+        "band": "MEDIUM",
+        "score": 79.3,
+        "confidence": "LOW",
+        "scored": true
+      }
+    }
+  ]
+}

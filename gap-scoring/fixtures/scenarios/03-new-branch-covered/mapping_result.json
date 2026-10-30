@@ -1,0 +1,45 @@
+{
+  "schema_version": "1.0",
+  "mode": "test_dependency_mapping",
+  "base_sha": "0000000000000000000000000000000000000000",
+  "environment": "default",
+  "selected_tests": [
+    "tests/test_cart.py::test_gift_items_skip_tax"
+  ],
+  "selection_complete": true,
+  "changes": [
+    {
+      "change": {
+        "entity_type": "function",
+        "entity_name": "total",
+        "change_type": "modify",
+        "change_category": "Logic change",
+        "line_start": 1,
+        "line_end": 10,
+        "summary": "AST structural change in function body",
+        "file_path": "shop/cart.py"
+      },
+      "status": "matched",
+      "tests": [
+        "tests/test_cart.py::test_gift_items_skip_tax"
+      ],
+      "evidence": {
+        "file_path": "cart.py",
+        "function": "total",
+        "environment": "default",
+        "evidence_level": "testmon_block_fingerprint",
+        "status": "matched",
+        "tests": [],
+        "unresolved_tests": [],
+        "limitations": []
+      }
+    }
+  ],
+  "limitations": [],
+  "summary": {
+    "changes": 1,
+    "selected_tests": 1,
+    "unresolved_changes": 0,
+    "file_fallbacks": 0
+  }
+}

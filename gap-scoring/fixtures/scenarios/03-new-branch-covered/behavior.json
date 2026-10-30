@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0",
+  "change_type": "unknown",
+  "summary": "scenario fixture",
+  "affected_functions": [
+    "total"
+  ],
+  "behavioral_impact": "Potential impact only; static AST analysis does not prove runtime behavior.",
+  "behavior_changes": [
+    {
+      "type": "NEW_BRANCH",
+      "function": "total",
+      "scope": "total",
+      "old_line": null,
+      "new_line": 8,
+      "confidence": "potential",
+      "condition": "item.gift",
+      "new_condition": "item.gift",
+      "effect": "skip tax",
+      "new_effect": "skip tax",
+      "branch_kind": "if"
+    }
+  ],
+  "suggested_tests": [],
+  "errors": [],
+  "analysis": {
+    "method": "python-ast",
+    "runtime_behavior_proven": false,
+    "llm_status": "disabled"
+  }
+}

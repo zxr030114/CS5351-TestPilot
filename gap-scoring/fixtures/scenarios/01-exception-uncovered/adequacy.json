@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0",
+  "mode": "test_adequacy_analysis",
+  "analysis": {
+    "method": "python-ast",
+    "runtime_adequacy_proven": false,
+    "input_complete": true,
+    "selection_complete": true
+  },
+  "results": [
+    {
+      "change": {
+        "type": "EXCEPTION_BEHAVIOR_CHANGE",
+        "function": "checkout",
+        "scope": "checkout",
+        "old_line": null,
+        "new_line": 6,
+        "confidence": "potential",
+        "operation": "added",
+        "new_exception_type": "InsufficientFunds",
+        "old_exception_type": null,
+        "new_behavior": "raise InsufficientFunds('cart is empty')"
+      },
+      "status": "no_candidate_test",
+      "candidate_tests": [
+        "tests/test_cart.py::test_checkout_basic"
+      ],
+      "evidence": [],
+      "recommendations": []
+    }
+  ],
+  "tests": {},
+  "errors": [],
+  "summary": {
+    "behavior_changes": 1,
+    "tests_analyzed": 1,
+    "with_assertion_evidence": 0
+  },
+  "limitations": []
+}

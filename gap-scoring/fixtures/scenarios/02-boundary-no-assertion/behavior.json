@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0",
+  "change_type": "unknown",
+  "summary": "scenario fixture",
+  "affected_functions": [
+    "apply_discount"
+  ],
+  "behavioral_impact": "Potential impact only; static AST analysis does not prove runtime behavior.",
+  "behavior_changes": [
+    {
+      "type": "BOUNDARY_CHANGE",
+      "function": "apply_discount",
+      "scope": "apply_discount",
+      "old_line": null,
+      "new_line": 4,
+      "confidence": "potential",
+      "variable": "age",
+      "operator": ">=",
+      "old_boundary": 18,
+      "new_boundary": 21
+    }
+  ],
+  "suggested_tests": [],
+  "errors": [],
+  "analysis": {
+    "method": "python-ast",
+    "runtime_behavior_proven": false,
+    "llm_status": "disabled"
+  }
+}

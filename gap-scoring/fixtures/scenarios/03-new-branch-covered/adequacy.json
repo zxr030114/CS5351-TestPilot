@@ -1,0 +1,62 @@
+{
+  "schema_version": "1.0",
+  "mode": "test_adequacy_analysis",
+  "analysis": {
+    "method": "python-ast",
+    "runtime_adequacy_proven": false,
+    "input_complete": true,
+    "selection_complete": true
+  },
+  "results": [
+    {
+      "change": {
+        "type": "NEW_BRANCH",
+        "function": "total",
+        "scope": "total",
+        "old_line": null,
+        "new_line": 8,
+        "confidence": "potential",
+        "condition": "item.gift",
+        "new_condition": "item.gift",
+        "effect": "skip tax",
+        "new_effect": "skip tax",
+        "branch_kind": "if"
+      },
+      "status": "assertion_evidence_found",
+      "candidate_tests": [
+        "tests/test_cart.py::test_gift_items_skip_tax"
+      ],
+      "evidence": [
+        {
+          "nodeid": "tests/test_cart.py::test_gift_items_skip_tax",
+          "line": 12,
+          "kind": "assert",
+          "strength": "potential_match",
+          "assertion": {
+            "kind": "assert",
+            "line": 12,
+            "expression": "total(cart) == 0",
+            "strength": "comparison"
+          },
+          "calls": [
+            {
+              "target": "shop.cart.total",
+              "expression": "total(cart)",
+              "line": 12,
+              "literal_arguments": []
+            }
+          ]
+        }
+      ],
+      "recommendations": []
+    }
+  ],
+  "tests": {},
+  "errors": [],
+  "summary": {
+    "behavior_changes": 1,
+    "tests_analyzed": 1,
+    "with_assertion_evidence": 0
+  },
+  "limitations": []
+}

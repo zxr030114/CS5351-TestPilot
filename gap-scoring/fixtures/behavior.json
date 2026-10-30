@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0",
+  "change_type": "unknown",
+  "summary": "Changed return expression in withdraw from round(balance - amount, 2) to round(balance - amount, 1).",
+  "affected_functions": [
+    "withdraw"
+  ],
+  "behavioral_impact": "Potential impact only; static AST analysis does not prove runtime behavior. Returned values or types may differ for some inputs.",
+  "behavior_changes": [
+    {
+      "type": "RETURN_BEHAVIOR_CHANGE",
+      "function": "withdraw",
+      "scope": "withdraw",
+      "old_expression": "round(balance - amount, 2)",
+      "new_expression": "round(balance - amount, 1)",
+      "old_line": 6,
+      "new_line": 6,
+      "confidence": "potential"
+    }
+  ],
+  "suggested_tests": [
+    "Assert the return value for withdraw after changing `round(balance - amount, 2)` to `round(balance - amount, 1)`. Include numeric inputs around the precision used by round()."
+  ],
+  "errors": [],
+  "analysis": {
+    "method": "python-ast",
+    "runtime_behavior_proven": false,
+    "llm_status": "disabled",
+    "llm_error": null
+  }
+}

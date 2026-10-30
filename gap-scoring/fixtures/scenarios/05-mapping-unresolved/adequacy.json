@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0",
+  "mode": "test_adequacy_analysis",
+  "analysis": {
+    "method": "python-ast",
+    "runtime_adequacy_proven": false,
+    "input_complete": true,
+    "selection_complete": true
+  },
+  "results": [
+    {
+      "change": {
+        "type": "RETURN_BEHAVIOR_CHANGE",
+        "function": "render",
+        "scope": "render",
+        "old_line": null,
+        "new_line": 9,
+        "confidence": "potential",
+        "old_expression": "render_rows(rows)",
+        "new_expression": "render_rows(sorted(rows))"
+      },
+      "status": "no_candidate_test",
+      "candidate_tests": [],
+      "evidence": [],
+      "recommendations": []
+    }
+  ],
+  "tests": {},
+  "errors": [],
+  "summary": {
+    "behavior_changes": 1,
+    "tests_analyzed": 0,
+    "with_assertion_evidence": 0
+  },
+  "limitations": []
+}

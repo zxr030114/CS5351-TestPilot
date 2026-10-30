@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0",
+  "mode": "test_adequacy_analysis",
+  "analysis": {
+    "method": "python-ast",
+    "runtime_adequacy_proven": false,
+    "input_complete": true,
+    "selection_complete": true
+  },
+  "results": [
+    {
+      "change": {
+        "type": "BOUNDARY_CHANGE",
+        "function": "apply_discount",
+        "scope": "apply_discount",
+        "old_line": null,
+        "new_line": 4,
+        "confidence": "potential",
+        "variable": "age",
+        "operator": ">=",
+        "old_boundary": 18,
+        "new_boundary": 21
+      },
+      "status": "no_matching_assertion",
+      "candidate_tests": [
+        "tests/test_discount.py::test_apply_discount"
+      ],
+      "evidence": [],
+      "recommendations": []
+    }
+  ],
+  "tests": {},
+  "errors": [],
+  "summary": {
+    "behavior_changes": 1,
+    "tests_analyzed": 1,
+    "with_assertion_evidence": 0
+  },
+  "limitations": []
+}

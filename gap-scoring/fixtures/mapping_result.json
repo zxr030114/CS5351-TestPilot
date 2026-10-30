@@ -1,0 +1,99 @@
+{
+  "schema_version": "1.0",
+  "mode": "test_dependency_mapping",
+  "base_sha": "cfdeb130f3b8fb57cb6078bad4ecdb8740d4bfeb",
+  "environment": "default",
+  "selected_tests": [
+    "mapping-demo/test_payment.py::test_insufficient_balance",
+    "mapping-demo/test_payment.py::test_negative_amount",
+    "mapping-demo/test_payment.py::test_normal_withdraw"
+  ],
+  "selection_complete": true,
+  "changes": [
+    {
+      "change": {
+        "entity_type": "function",
+        "entity_name": "withdraw",
+        "change_type": "modify",
+        "change_category": "Logic change",
+        "line_start": 1,
+        "line_end": 6,
+        "summary": "AST structural change in function body",
+        "file_path": "mapping-demo/payment.py"
+      },
+      "status": "matched",
+      "tests": [
+        "mapping-demo/test_payment.py::test_insufficient_balance",
+        "mapping-demo/test_payment.py::test_negative_amount",
+        "mapping-demo/test_payment.py::test_normal_withdraw"
+      ],
+      "evidence": {
+        "file_path": "payment.py",
+        "function": "withdraw",
+        "environment": "default",
+        "evidence_level": "testmon_block_fingerprint",
+        "status": "matched",
+        "tests": [
+          {
+            "test": "test_payment.py::test_insufficient_balance",
+            "reason": "Recorded dependency contains the requested function body fingerprint.",
+            "same_file_revision": true,
+            "blocks": [
+              {
+                "block": "withdraw",
+                "line_start": 2,
+                "line_end": 8,
+                "checksum": 425908956
+              }
+            ]
+          },
+          {
+            "test": "test_payment.py::test_negative_amount",
+            "reason": "Recorded dependency contains the requested function body fingerprint.",
+            "same_file_revision": true,
+            "blocks": [
+              {
+                "block": "withdraw",
+                "line_start": 2,
+                "line_end": 8,
+                "checksum": 425908956
+              }
+            ]
+          },
+          {
+            "test": "test_payment.py::test_normal_withdraw",
+            "reason": "Recorded dependency contains the requested function body fingerprint.",
+            "same_file_revision": true,
+            "blocks": [
+              {
+                "block": "withdraw",
+                "line_start": 2,
+                "line_end": 8,
+                "checksum": 425908956
+              }
+            ]
+          }
+        ],
+        "unresolved_tests": [],
+        "limitations": [
+          "Block execution evidence does not prove which branch was taken.",
+          "This query does not reconstruct a runtime call chain.",
+          "Unmatched historical fingerprints may require the baseline source revision.",
+          "A CRC32 match uses testmon's fingerprint semantics, not proof of equivalence."
+        ]
+      }
+    }
+  ],
+  "limitations": [
+    "Database provenance is not tied to Git: collect it on the base revision.",
+    "Historical block evidence does not prove branch execution or a call chain.",
+    "File-level fallbacks deliberately include extra tests.",
+    "Missing mappings are unresolved, not proof that no tests are needed."
+  ],
+  "summary": {
+    "changes": 1,
+    "selected_tests": 3,
+    "unresolved_changes": 0,
+    "file_fallbacks": 0
+  }
+}

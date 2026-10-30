@@ -1,0 +1,45 @@
+{
+  "schema_version": "1.0",
+  "mode": "test_dependency_mapping",
+  "base_sha": "0000000000000000000000000000000000000000",
+  "environment": "default",
+  "selected_tests": [
+    "tests/test_discount.py::test_apply_discount"
+  ],
+  "selection_complete": true,
+  "changes": [
+    {
+      "change": {
+        "entity_type": "function",
+        "entity_name": "apply_discount",
+        "change_type": "modify",
+        "change_category": "Logic change",
+        "line_start": 1,
+        "line_end": 10,
+        "summary": "AST structural change in function body",
+        "file_path": "shop/discount.py"
+      },
+      "status": "matched",
+      "tests": [
+        "tests/test_discount.py::test_apply_discount"
+      ],
+      "evidence": {
+        "file_path": "discount.py",
+        "function": "apply_discount",
+        "environment": "default",
+        "evidence_level": "testmon_block_fingerprint",
+        "status": "matched",
+        "tests": [],
+        "unresolved_tests": [],
+        "limitations": []
+      }
+    }
+  ],
+  "limitations": [],
+  "summary": {
+    "changes": 1,
+    "selected_tests": 1,
+    "unresolved_changes": 0,
+    "file_fallbacks": 0
+  }
+}
