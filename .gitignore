@@ -26,3 +26,4 @@ build/
 .testmondata*
 .pytest_cache/
 *.egg-info/
+mapping-demo/mapping_result.json
