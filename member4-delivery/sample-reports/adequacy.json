@@ -1,0 +1,491 @@
+{
+  "schema_version": "1.0",
+  "mode": "test_adequacy_analysis",
+  "analysis": {
+    "method": "python-ast",
+    "runtime_adequacy_proven": false,
+    "input_complete": true,
+    "selection_complete": null
+  },
+  "results": [
+    {
+      "change": {
+        "type": "NEW_BRANCH",
+        "function": "withdraw",
+        "scope": "withdraw",
+        "condition": "amount < 0",
+        "old_condition": null,
+        "new_condition": "amount < 0",
+        "effect": "raise ValueError",
+        "old_effect": null,
+        "new_effect": "raise ValueError",
+        "alternate_effect": "no direct effect",
+        "branch_kind": "if",
+        "old_line": null,
+        "new_line": 2,
+        "context": [],
+        "confidence": "potential",
+        "file_path": "payment.py"
+      },
+      "status": "assertion_evidence_found",
+      "candidate_tests": [
+        "mapping-demo/test_payment.py::test_normal_withdraw",
+        "mapping-demo/test_payment.py::test_insufficient_balance",
+        "mapping-demo/test_payment.py::test_negative_amount"
+      ],
+      "evidence": [
+        {
+          "nodeid": "mapping-demo/test_payment.py::test_normal_withdraw",
+          "line": 7,
+          "kind": "assert",
+          "strength": "potential_match",
+          "assertion": {
+            "kind": "assert",
+            "line": 7,
+            "expression": "withdraw(100, 30) == 70",
+            "strength": "comparison"
+          },
+          "calls": [
+            {
+              "target": "payment.withdraw",
+              "expression": "withdraw(100, 30)",
+              "line": 7,
+              "literal_arguments": [
+                100,
+                30
+              ]
+            }
+          ]
+        },
+        {
+          "nodeid": "mapping-demo/test_payment.py::test_insufficient_balance",
+          "line": 11,
+          "kind": "pytest.raises",
+          "strength": "weak_or_mismatched",
+          "assertion": {
+            "kind": "pytest.raises",
+            "line": 11,
+            "expected_exceptions": [
+              "ValueError"
+            ],
+            "match": "'Insufficient balance'"
+          },
+          "calls": [
+            {
+              "target": "payment.withdraw",
+              "expression": "withdraw(100, 150)",
+              "line": 12,
+              "literal_arguments": [
+                100,
+                150
+              ]
+            }
+          ]
+        },
+        {
+          "nodeid": "mapping-demo/test_payment.py::test_negative_amount",
+          "line": 16,
+          "kind": "pytest.raises",
+          "strength": "weak_or_mismatched",
+          "assertion": {
+            "kind": "pytest.raises",
+            "line": 16,
+            "expected_exceptions": [
+              "ValueError"
+            ],
+            "match": "'non-negative'"
+          },
+          "calls": [
+            {
+              "target": "payment.withdraw",
+              "expression": "withdraw(100, -10)",
+              "line": 17,
+              "literal_arguments": [
+                100,
+                -10
+              ]
+            }
+          ]
+        }
+      ],
+      "recommendations": [
+        "Assert the changed expected result and exercise each affected branch, including a contrasting input."
+      ]
+    },
+    {
+      "change": {
+        "type": "EXCEPTION_BEHAVIOR_CHANGE",
+        "operation": "added",
+        "function": "withdraw",
+        "scope": "withdraw",
+        "exception_type": "ValueError",
+        "old_exception_type": null,
+        "new_exception_type": "ValueError",
+        "old_behavior": null,
+        "new_behavior": "raise ValueError('amount must be non-negative')",
+        "trigger_condition": "if true amount < 0",
+        "old_line": null,
+        "new_line": 3,
+        "confidence": "potential",
+        "file_path": "payment.py"
+      },
+      "status": "assertion_evidence_found",
+      "candidate_tests": [
+        "mapping-demo/test_payment.py::test_normal_withdraw",
+        "mapping-demo/test_payment.py::test_insufficient_balance",
+        "mapping-demo/test_payment.py::test_negative_amount"
+      ],
+      "evidence": [
+        {
+          "nodeid": "mapping-demo/test_payment.py::test_normal_withdraw",
+          "line": 7,
+          "kind": "assert",
+          "strength": "weak_or_mismatched",
+          "assertion": {
+            "kind": "assert",
+            "line": 7,
+            "expression": "withdraw(100, 30) == 70",
+            "strength": "comparison"
+          },
+          "calls": [
+            {
+              "target": "payment.withdraw",
+              "expression": "withdraw(100, 30)",
+              "line": 7,
+              "literal_arguments": [
+                100,
+                30
+              ]
+            }
+          ]
+        },
+        {
+          "nodeid": "mapping-demo/test_payment.py::test_insufficient_balance",
+          "line": 11,
+          "kind": "pytest.raises",
+          "strength": "potential_match",
+          "assertion": {
+            "kind": "pytest.raises",
+            "line": 11,
+            "expected_exceptions": [
+              "ValueError"
+            ],
+            "match": "'Insufficient balance'"
+          },
+          "calls": [
+            {
+              "target": "payment.withdraw",
+              "expression": "withdraw(100, 150)",
+              "line": 12,
+              "literal_arguments": [
+                100,
+                150
+              ]
+            }
+          ]
+        },
+        {
+          "nodeid": "mapping-demo/test_payment.py::test_negative_amount",
+          "line": 16,
+          "kind": "pytest.raises",
+          "strength": "potential_match",
+          "assertion": {
+            "kind": "pytest.raises",
+            "line": 16,
+            "expected_exceptions": [
+              "ValueError"
+            ],
+            "match": "'non-negative'"
+          },
+          "calls": [
+            {
+              "target": "payment.withdraw",
+              "expression": "withdraw(100, -10)",
+              "line": 17,
+              "literal_arguments": [
+                100,
+                -10
+              ]
+            }
+          ]
+        }
+      ],
+      "recommendations": [
+        "Assert pytest.raises(ValueError) around the target call; check trigger inputs and message when relevant."
+      ]
+    },
+    {
+      "change": {
+        "type": "RETURN_BEHAVIOR_CHANGE",
+        "function": "withdraw",
+        "scope": "withdraw",
+        "old_expression": "balance - amount",
+        "new_expression": "round(balance - amount, 1)",
+        "old_line": 2,
+        "new_line": 4,
+        "confidence": "potential",
+        "file_path": "payment.py"
+      },
+      "status": "assertion_evidence_found",
+      "candidate_tests": [
+        "mapping-demo/test_payment.py::test_normal_withdraw",
+        "mapping-demo/test_payment.py::test_insufficient_balance",
+        "mapping-demo/test_payment.py::test_negative_amount"
+      ],
+      "evidence": [
+        {
+          "nodeid": "mapping-demo/test_payment.py::test_normal_withdraw",
+          "line": 7,
+          "kind": "assert",
+          "strength": "potential_match",
+          "assertion": {
+            "kind": "assert",
+            "line": 7,
+            "expression": "withdraw(100, 30) == 70",
+            "strength": "comparison"
+          },
+          "calls": [
+            {
+              "target": "payment.withdraw",
+              "expression": "withdraw(100, 30)",
+              "line": 7,
+              "literal_arguments": [
+                100,
+                30
+              ]
+            }
+          ]
+        },
+        {
+          "nodeid": "mapping-demo/test_payment.py::test_insufficient_balance",
+          "line": 11,
+          "kind": "pytest.raises",
+          "strength": "weak_or_mismatched",
+          "assertion": {
+            "kind": "pytest.raises",
+            "line": 11,
+            "expected_exceptions": [
+              "ValueError"
+            ],
+            "match": "'Insufficient balance'"
+          },
+          "calls": [
+            {
+              "target": "payment.withdraw",
+              "expression": "withdraw(100, 150)",
+              "line": 12,
+              "literal_arguments": [
+                100,
+                150
+              ]
+            }
+          ]
+        },
+        {
+          "nodeid": "mapping-demo/test_payment.py::test_negative_amount",
+          "line": 16,
+          "kind": "pytest.raises",
+          "strength": "weak_or_mismatched",
+          "assertion": {
+            "kind": "pytest.raises",
+            "line": 16,
+            "expected_exceptions": [
+              "ValueError"
+            ],
+            "match": "'non-negative'"
+          },
+          "calls": [
+            {
+              "target": "payment.withdraw",
+              "expression": "withdraw(100, -10)",
+              "line": 17,
+              "literal_arguments": [
+                100,
+                -10
+              ]
+            }
+          ]
+        }
+      ],
+      "recommendations": [
+        "Assert the changed expected result and exercise each affected branch, including a contrasting input.",
+        "Use fractional inputs that distinguish the old and new precision; an integer-only example cannot establish rounding adequacy."
+      ]
+    }
+  ],
+  "tests": [
+    {
+      "nodeid": "mapping-demo/test_payment.py::test_normal_withdraw",
+      "line": 6,
+      "calls": [
+        {
+          "target": "payment.withdraw",
+          "expression": "withdraw(100, 30)",
+          "line": 7,
+          "literal_arguments": [
+            100,
+            30
+          ]
+        }
+      ],
+      "assertions": [
+        {
+          "kind": "assert",
+          "line": 7,
+          "expression": "withdraw(100, 30) == 70",
+          "strength": "comparison",
+          "calls": [
+            {
+              "target": "payment.withdraw",
+              "expression": "withdraw(100, 30)",
+              "line": 7,
+              "literal_arguments": [
+                100,
+                30
+              ]
+            }
+          ]
+        }
+      ],
+      "raises": []
+    },
+    {
+      "nodeid": "mapping-demo/test_payment.py::test_insufficient_balance",
+      "line": 10,
+      "calls": [
+        {
+          "target": "pytest.raises",
+          "expression": "pytest.raises(ValueError, match='Insufficient balance')",
+          "line": 11,
+          "literal_arguments": [
+            "Insufficient balance"
+          ]
+        },
+        {
+          "target": "payment.withdraw",
+          "expression": "withdraw(100, 150)",
+          "line": 12,
+          "literal_arguments": [
+            100,
+            150
+          ]
+        }
+      ],
+      "assertions": [],
+      "raises": [
+        {
+          "kind": "pytest.raises",
+          "line": 11,
+          "expected_exceptions": [
+            "ValueError"
+          ],
+          "match": "'Insufficient balance'",
+          "calls": [
+            {
+              "target": "payment.withdraw",
+              "expression": "withdraw(100, 150)",
+              "line": 12,
+              "literal_arguments": [
+                100,
+                150
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeid": "mapping-demo/test_payment.py::test_negative_amount",
+      "line": 15,
+      "calls": [
+        {
+          "target": "pytest.raises",
+          "expression": "pytest.raises(ValueError, match='non-negative')",
+          "line": 16,
+          "literal_arguments": [
+            "non-negative"
+          ]
+        },
+        {
+          "target": "payment.withdraw",
+          "expression": "withdraw(100, -10)",
+          "line": 17,
+          "literal_arguments": [
+            100,
+            -10
+          ]
+        }
+      ],
+      "assertions": [],
+      "raises": [
+        {
+          "kind": "pytest.raises",
+          "line": 16,
+          "expected_exceptions": [
+            "ValueError"
+          ],
+          "match": "'non-negative'",
+          "calls": [
+            {
+              "target": "payment.withdraw",
+              "expression": "withdraw(100, -10)",
+              "line": 17,
+              "literal_arguments": [
+                100,
+                -10
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeid": "mapping-demo/test_payment.py::test_deposit",
+      "line": 20,
+      "calls": [
+        {
+          "target": "payment.deposit",
+          "expression": "deposit(100, 20)",
+          "line": 21,
+          "literal_arguments": [
+            100,
+            20
+          ]
+        }
+      ],
+      "assertions": [
+        {
+          "kind": "assert",
+          "line": 21,
+          "expression": "deposit(100, 20) == 120",
+          "strength": "comparison",
+          "calls": [
+            {
+              "target": "payment.deposit",
+              "expression": "deposit(100, 20)",
+              "line": 21,
+              "literal_arguments": [
+                100,
+                20
+              ]
+            }
+          ]
+        }
+      ],
+      "raises": []
+    }
+  ],
+  "errors": [],
+  "summary": {
+    "behavior_changes": 3,
+    "tests_analyzed": 4,
+    "with_assertion_evidence": 3
+  },
+  "limitations": [
+    "Matches are syntactic candidates, not proof of branch execution or correct expected values.",
+    "Function suffix matching is ambiguous without file_path; supply repository-relative file_path when possible.",
+    "Fixtures, helpers, dynamic imports, instance dispatch and parametrization are not expanded.",
+    "Only straight-line direct-result assignments are tracked; alias reassignment and shadowing are not resolved.",
+    "Boundary inputs and changed expected values need manual or runtime validation."
+  ]
+}

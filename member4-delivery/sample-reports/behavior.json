@@ -1,0 +1,68 @@
+{
+  "schema_version": "1.0",
+  "change_type": "unknown",
+  "summary": "Added a conditional branch (if) in withdraw. Changed exception behavior in withdraw: no exception -> raise ValueError('amount must be non-negative'). Changed return expression in withdraw from balance - amount to round(balance - amount, 1).",
+  "affected_functions": [
+    "withdraw"
+  ],
+  "behavioral_impact": "Potential impact only; static AST analysis does not prove runtime behavior. The condition `amount < 0` may direct inputs to a different path. Callers may need different exception handling or normal-path assertions. Returned values or types may differ for some inputs.",
+  "behavior_changes": [
+    {
+      "type": "NEW_BRANCH",
+      "function": "withdraw",
+      "scope": "withdraw",
+      "condition": "amount < 0",
+      "old_condition": null,
+      "new_condition": "amount < 0",
+      "effect": "raise ValueError",
+      "old_effect": null,
+      "new_effect": "raise ValueError",
+      "alternate_effect": "no direct effect",
+      "branch_kind": "if",
+      "old_line": null,
+      "new_line": 2,
+      "context": [],
+      "confidence": "potential",
+      "file_path": "payment.py"
+    },
+    {
+      "type": "EXCEPTION_BEHAVIOR_CHANGE",
+      "operation": "added",
+      "function": "withdraw",
+      "scope": "withdraw",
+      "exception_type": "ValueError",
+      "old_exception_type": null,
+      "new_exception_type": "ValueError",
+      "old_behavior": null,
+      "new_behavior": "raise ValueError('amount must be non-negative')",
+      "trigger_condition": "if true amount < 0",
+      "old_line": null,
+      "new_line": 3,
+      "confidence": "potential",
+      "file_path": "payment.py"
+    },
+    {
+      "type": "RETURN_BEHAVIOR_CHANGE",
+      "function": "withdraw",
+      "scope": "withdraw",
+      "old_expression": "balance - amount",
+      "new_expression": "round(balance - amount, 1)",
+      "old_line": 2,
+      "new_line": 4,
+      "confidence": "potential",
+      "file_path": "payment.py"
+    }
+  ],
+  "suggested_tests": [
+    "Test withdraw with condition `amount < 0` evaluating both True and False.",
+    "Test withdraw when if true amount < 0 for ValueError, and test a normal input path that should not raise.",
+    "Assert the return value for withdraw after changing `balance - amount` to `round(balance - amount, 1)`. Include numeric inputs around the precision used by round()."
+  ],
+  "errors": [],
+  "analysis": {
+    "method": "python-ast",
+    "runtime_behavior_proven": false,
+    "llm_status": "disabled",
+    "llm_error": null
+  }
+}
