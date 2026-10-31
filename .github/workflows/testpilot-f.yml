@@ -1,0 +1,130 @@
+name: TestPilot F
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: testpilot-f-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # Read-only CI tests the proposed tool changes. The publishing job below
+      # executes only the trusted base version and receives separate permissions.
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r pr-reporter/requirements.txt
+      - name: F automated tests
+        run: python -m unittest discover -s pr-reporter/tests -v
+      - name: Frozen evaluation and local end-to-end demonstration
+        run: |
+          python pr-reporter/pr_reporter.py evaluate --out pr-reporter/out/evaluation
+          python pr-reporter/pr_reporter.py demo --out pr-reporter/out/demo
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: testpilot-acceptance-${{ github.run_id }}
+          path: pr-reporter/out/
+          if-no-files-found: warn
+
+  analyze:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: tools
+          ref: ${{ github.event.pull_request.base.sha }}
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          path: target
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r tools/pr-reporter/requirements.txt
+      - name: Real A-E analysis with a baseline testmon database
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          REPO_NAME: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        # Execute only BASE tests; HEAD is parsed as source, not imported.
+        # This repository's bounded baseline suite is the payment demo. For a
+        # different project, set the testmon root and test targets to its suite.
+        run: >-
+          python tools/pr-reporter/pr_reporter.py run
+          --repo-dir target --base "$BASE_SHA" --head "$HEAD_SHA"
+          --repo-name "$REPO_NAME" --pr "$PR_NUMBER"
+          --collect-baseline --testmon-root mapping-demo
+          --pytest-target test_payment.py --out results
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: testpilot-pr-${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}
+          path: results/
+          if-no-files-found: error
+
+  publish:
+    needs: analyze
+    if: >-
+      always() && github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: testpilot-pr-${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}
+          path: results
+      - name: Update PR comment before evaluating the optional HIGH gate
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          REPO_NAME: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          FAIL_ON_HIGH: ${{ vars.TESTPILOT_FAIL_ON_HIGH }}
+        shell: bash
+        run: |
+          if [ ! -f results/gap_report.json ] && [ ! -f results/failure.txt ]; then
+            mkdir -p results
+            printf '%s\n' 'Analysis artifact unavailable; no adequacy conclusion is available.' > results/failure.txt
+          fi
+          if [ -f results/failure.txt ]; then
+            python pr-reporter/pr_reporter.py report --failure-file results/failure.txt \
+              --out published --publish --repo-name "$REPO_NAME" --pr "$PR_NUMBER" --expected-head "$HEAD_SHA"
+          else
+            gate=()
+            if [ "$FAIL_ON_HIGH" = "true" ]; then gate+=(--fail-on-high); fi
+            python pr-reporter/pr_reporter.py report --report results/gap_report.json \
+              --out published --publish --repo-name "$REPO_NAME" --pr "$PR_NUMBER" \
+              --expected-head "$HEAD_SHA" "${gate[@]}"
+          fi
+

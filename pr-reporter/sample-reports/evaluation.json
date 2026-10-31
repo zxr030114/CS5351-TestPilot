@@ -1,0 +1,110 @@
+{
+  "schema_version": "1.0",
+  "contract_id": "f-acceptance-v1",
+  "contract_sha256": "57e593b793e94c19cf302c8c7fab33bd16c039ed673db92f0bb418c5366bf2fe",
+  "dataset_kind": "synthetic_acceptance_not_real_world_benchmark",
+  "threshold": 20,
+  "criteria": {
+    "precision_min": 1.0,
+    "recall_min": 1.0,
+    "specificity_min": 1.0,
+    "p95_ms_max": 2000
+  },
+  "testpilot": {
+    "evaluated": 5,
+    "tp": 3,
+    "fp": 0,
+    "tn": 2,
+    "fn": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "specificity": 1.0
+  },
+  "baseline_kind": "coverage_presence_heuristic_not_native_testmon_gap_detection",
+  "baseline": {
+    "evaluated": 5,
+    "tp": 0,
+    "fp": 0,
+    "tn": 2,
+    "fn": 3,
+    "precision": null,
+    "recall": 0.0,
+    "specificity": 1.0
+  },
+  "unknown_ground_truth_excluded": 1,
+  "timing": {
+    "scope": "load A-D + score E + render F; excludes git, pytest and network",
+    "samples": 30,
+    "p95_ms": 1.134,
+    "mean_ms": 1.433
+  },
+  "checks": {
+    "precision_min": true,
+    "recall_min": true,
+    "specificity_min": true,
+    "p95_ms_max": true,
+    "uncertainty_disclosed": true
+  },
+  "passed": true,
+  "cases": [
+    {
+      "id": "precision",
+      "ground_truth": true,
+      "prediction": true,
+      "baseline_prediction": false,
+      "rationale": "Integer-only assertion cannot distinguish changed decimal precision",
+      "uncertainty_disclosed": true,
+      "mean_ms": 4.111
+    },
+    {
+      "id": "exception",
+      "ground_truth": true,
+      "prediction": true,
+      "baseline_prediction": false,
+      "rationale": "Historical dependencies exist but no candidate asserts the new exception",
+      "uncertainty_disclosed": true,
+      "mean_ms": 0.885
+    },
+    {
+      "id": "boundary",
+      "ground_truth": true,
+      "prediction": true,
+      "baseline_prediction": false,
+      "rationale": "Target call exists without a related comparison",
+      "uncertainty_disclosed": true,
+      "mean_ms": 0.968
+    },
+    {
+      "id": "asserted_branch",
+      "ground_truth": false,
+      "prediction": false,
+      "baseline_prediction": false,
+      "rationale": "The supplied D evidence contains a relevant branch assertion",
+      "uncertainty_disclosed": true,
+      "mean_ms": 0.93
+    },
+    {
+      "id": "documentation",
+      "ground_truth": false,
+      "prediction": false,
+      "baseline_prediction": false,
+      "rationale": "Documentation-only change is not an executable behavior gap",
+      "uncertainty_disclosed": true,
+      "mean_ms": 0.814
+    },
+    {
+      "id": "unknown_mapping",
+      "ground_truth": null,
+      "prediction": true,
+      "baseline_prediction": null,
+      "rationale": "Unknown truth: exclude from accuracy metrics and check uncertainty disclosure",
+      "uncertainty_disclosed": true,
+      "mean_ms": 0.888
+    }
+  ],
+  "limitations": [
+    "Six synthetic acceptance cases are not a representative benchmark.",
+    "Baseline predictions describe an explicit coverage-presence heuristic, not a native testmon gap detector.",
+    "Labels are fixed contract judgements; independent real-project annotation and user feedback remain necessary."
+  ]
+}

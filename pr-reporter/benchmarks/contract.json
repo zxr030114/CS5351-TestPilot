@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0",
+  "contract_id": "f-acceptance-v1",
+  "task": "Identify potential assertion gaps in fixed synthetic saved A-D reports",
+  "dataset_kind": "synthetic_acceptance_not_real_world_benchmark",
+  "prediction_threshold": 20,
+  "repetitions": 5,
+  "criteria": {"precision_min": 1.0, "recall_min": 1.0, "specificity_min": 1.0, "p95_ms_max": 2000},
+  "baseline": "coverage_presence_heuristic_not_native_testmon_gap_detection",
+  "cases": [
+    {"id": "precision", "directory": "gap-scoring/fixtures", "behavior": "behavior_with_path.json", "gap": true, "baseline_gap": false, "rationale": "Integer-only assertion cannot distinguish changed decimal precision"},
+    {"id": "exception", "directory": "gap-scoring/fixtures/scenarios/01-exception-uncovered", "gap": true, "baseline_gap": false, "rationale": "Historical dependencies exist but no candidate asserts the new exception"},
+    {"id": "boundary", "directory": "gap-scoring/fixtures/scenarios/02-boundary-no-assertion", "gap": true, "baseline_gap": false, "rationale": "Target call exists without a related comparison"},
+    {"id": "asserted_branch", "directory": "gap-scoring/fixtures/scenarios/03-new-branch-covered", "gap": false, "baseline_gap": false, "rationale": "The supplied D evidence contains a relevant branch assertion"},
+    {"id": "documentation", "directory": "gap-scoring/fixtures/scenarios/04-documentation-only", "gap": false, "baseline_gap": false, "rationale": "Documentation-only change is not an executable behavior gap"},
+    {"id": "unknown_mapping", "directory": "gap-scoring/fixtures/scenarios/05-mapping-unresolved", "gap": null, "baseline_gap": null, "rationale": "Unknown truth: exclude from accuracy metrics and check uncertainty disclosure"}
+  ]
+}

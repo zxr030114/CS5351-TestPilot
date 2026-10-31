@@ -1,0 +1,99 @@
+{
+  "schema_version": "1.0",
+  "module": "test_gap_scoring",
+  "pr": {
+    "repo": "",
+    "number": null,
+    "base_sha": "9471ae922beedb997ef2aee14739c9dfa9473d02",
+    "head_sha": "668ed333852599bf5e70f83db9e1c4f1908b11d0"
+  },
+  "inputs": {
+    "behavior": "loaded",
+    "mapping": "loaded",
+    "adequacy": "loaded"
+  },
+  "summary": {
+    "changes_total": 1,
+    "changes_scored": 1,
+    "changes_unscored": 0,
+    "gaps_high": 0,
+    "gaps_medium": 0,
+    "gaps_low": 1,
+    "gaps_none": 0,
+    "average_score": 43.55,
+    "max_score": 43.55,
+    "reported_gaps": 1,
+    "mapping_coverage": 1.0,
+    "orphan_behaviors": 0
+  },
+  "gaps": [
+    {
+      "entity_key": "payment.py::withdraw@1",
+      "file_path": "payment.py",
+      "entity_name": "withdraw",
+      "entity_type": "function",
+      "line_start": 1,
+      "line_end": 2,
+      "gap_score": 43.55,
+      "risk": "LOW",
+      "confidence": "HIGH",
+      "confidence_signals": [],
+      "components": {
+        "behavior_type": "RETURN_BEHAVIOR_CHANGE",
+        "behavior_risk": 0.6,
+        "change_importance": 0.9,
+        "adequacy_level": 2.5,
+        "adequacy_deficit": 0.35,
+        "assumed_level": false,
+        "downgraded": "precision_blind_evidence",
+        "uncertain": null,
+        "join_method": "exact",
+        "confidence": "HIGH",
+        "confidence_signals": [],
+        "base": 43.55,
+        "bonus": 0,
+        "rule_hits": []
+      },
+      "rule_hits": [],
+      "affected_tests": [
+        "test_integer"
+      ],
+      "explanation": {
+        "one_liner": "Potential test gap in `withdraw` (LOW, 43.55/100)",
+        "changed_behavior": "return expression changed: `round(balance - amount, 2)` -> `round(balance - amount, 1)`",
+        "problem": "`withdraw(100, 30) == 70` uses integer inputs, so it cannot tell the two implementations apart",
+        "suggested_test_input": "withdraw(100, 30.05)",
+        "evidence": [
+          {
+            "kind": "changed_entity",
+            "detail": "withdraw (Logic change)",
+            "file_path": "payment.py",
+            "line": 1,
+            "test": null
+          },
+          {
+            "kind": "assert",
+            "detail": "potential_match",
+            "file_path": null,
+            "line": 4,
+            "test": "test_payment.py::test_integer"
+          }
+        ]
+      }
+    }
+  ],
+  "unscored": [],
+  "problems": [],
+  "execution": {
+    "run_id": "668ed3338525-1793369472804320800",
+    "base_sha": "9471ae922beedb997ef2aee14739c9dfa9473d02",
+    "head_sha": "668ed333852599bf5e70f83db9e1c4f1908b11d0",
+    "baseline": "collected",
+    "head_tests_executed": false,
+    "timings_ms": {
+      "baseline_testmon_ms": 692.678,
+      "analysis_a_to_e_ms": 369.576,
+      "total_ms": 2066.719
+    }
+  }
+}

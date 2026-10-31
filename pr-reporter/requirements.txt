@@ -1,0 +1,7 @@
+# F report/publish/evaluate uses the standard library plus the existing E module.
+# These packages enable the optional real A-D integration and baseline collection.
+pytest>=7,<9
+coverage>=6,<8
+tree-sitter==0.21.3
+tree-sitter-languages==1.10.2
+
